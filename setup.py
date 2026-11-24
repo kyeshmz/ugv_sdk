@@ -4,7 +4,12 @@ import subprocess
 import os
 import sys
 import platform
+import re
 from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+VERSION = re.search(r"project\(ugv_sdk VERSION ([0-9.]+)\)",
+                    (HERE / "CMakeLists.txt").read_text()).group(1)
 
 
 class CMakeExtension(Extension):
@@ -36,6 +41,7 @@ class CMakeBuild(build_ext):
         cmake_args = [
             f"-DPYBIND_OUTPUT_LIBDIR={extdir}{os.sep}",
             f"-DPYTHON_EXECUTABLE={sys.executable}",
+            f"-DPython_EXECUTABLE={sys.executable}",
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DPYTHON_BINDING=ON"
         ]
@@ -63,16 +69,24 @@ class CMakeBuild(build_ext):
 
 setup(
     name='ugv_sdk_py',
-    version='0.2.0',
-    author='Ruixiang Du',
+    version=VERSION,
+    author='Ruixiang Du (Weston Robot), with AgileX Robotics',
     author_email='ruixiang.du@westonrobot.com',
-    description='Python bindings for the ugv_sdk library using pybind11',
-    long_description='ugv_sdk C++ library: https://github.com/westonrobot/ugv_sdk, by Weston Robot & AgileX Robotics',
+    maintainer='kyeshmz (unofficial PyPI build)',
+    description='Python bindings for ugv_sdk by Weston Robot & AgileX Robotics (unofficial build)',
+    long_description=(HERE / 'python' / 'PYPI_README.md').read_text(),
+    long_description_content_type='text/markdown',
+    url='https://github.com/westonrobot/ugv_sdk',
+    project_urls={
+        'Upstream': 'https://github.com/westonrobot/ugv_sdk',
+        'Upstream issues': 'https://github.com/westonrobot/ugv_sdk/issues',
+        'Wheel builds': 'https://github.com/kyeshmz/ugv_sdk',
+    },
+    license='Apache-2.0',
+    license_files=['LICENSE'],
     classifiers=[
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.10',
     ],
     platforms=['Linux'],
     python_requires='>=3.8',

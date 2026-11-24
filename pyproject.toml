@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=77", "cmake>=3.15"]
+build-backend = "setuptools.build_meta"
+
+[tool.cibuildwheel]
+# The SDK talks to robots over Linux SocketCAN, so only Linux wheels are built.
+build = "cp3*-manylinux_*"
+skip = "cp3??t-*"
+test-command = "python {project}/python/smoke_test.py"
+
+[tool.cibuildwheel.linux]
+# asio is header-only. 1.28 is pinned because the SDK still calls
+# io_context::post/reset, which asio removed in 1.33.
+before-all = """
+curl -fsSL -o /tmp/asio.tgz https://github.com/chriskohlhoff/asio/archive/refs/tags/asio-1-28-0.tar.gz &&
+echo '226438b0798099ad2a202563a83571ce06dd13b570d8fded4840dbc1f97fa328  /tmp/asio.tgz' | sha256sum -c - &&
+tar -xzf /tmp/asio.tgz -C /tmp &&
+cp -r /tmp/asio-asio-1-28-0/asio/include/asio /tmp/asio-asio-1-28-0/asio/include/asio.hpp /usr/local/include/
+"""
