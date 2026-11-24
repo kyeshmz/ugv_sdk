@@ -45,6 +45,11 @@ class CMakeBuild(build_ext):
             f"-DCMAKE_BUILD_TYPE={cfg}",
             f"-DPYTHON_BINDING=ON"
         ]
+        try:
+            import pybind11
+            cmake_args.append(f"-Dpybind11_DIR={pybind11.get_cmake_dir()}")
+        except ImportError:
+            pass
         build_args = ['--config', cfg]
         build_args += ['--', '-j2']
 
