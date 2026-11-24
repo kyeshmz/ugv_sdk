@@ -13,7 +13,9 @@ The SDK and the Python bindings are the work of Weston Robot and AgileX Robotics
 This is an unofficial build. Weston Robot and AgileX Robotics do not publish or
 maintain it. The wheels are built from the fork at
 [kyeshmz/ugv_sdk](https://github.com/kyeshmz/ugv_sdk). The fork changes only
-packaging and CI, so it can ship prebuilt Linux wheels (x86_64 and aarch64).
+packaging and CI, so it can ship prebuilt Linux wheels. The wheels follow
+upstream's support matrix: Ubuntu 18.04, 20.04 and 22.04 (24.04 also works) on
+x86_64 and arm64, and Python 3.8 or newer.
 Report SDK bugs and robot support questions
 [upstream](https://github.com/westonrobot/ugv_sdk/issues).
 

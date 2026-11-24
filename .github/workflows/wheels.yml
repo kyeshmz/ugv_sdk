@@ -44,20 +44,71 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/pypi-v')
         run: |
           version=$(sed -n 's/^project(ugv_sdk VERSION \([0-9.]*\)).*/\1/p' CMakeLists.txt)
-          if [ "pypi-v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME does not match CMakeLists.txt version $version"
-            exit 1
-          fi
+          # pypi-v<version>-<n> rebuilds a version that is already on PyPI.
+          case "$GITHUB_REF_NAME" in
+            "pypi-v$version" | "pypi-v$version"-*) ;;
+            *)
+              echo "Tag $GITHUB_REF_NAME does not match CMakeLists.txt version $version"
+              exit 1
+              ;;
+          esac
       - run: pipx run build --sdist
       - uses: actions/upload-artifact@v7
         with:
           name: sdist
           path: dist/*.tar.gz
 
+  # Install the wheels on every Ubuntu release upstream supports (18.04, 20.04,
+  # 22.04), plus 24.04, using each release's own Python.
+  test_ubuntu:
+    name: Ubuntu ${{ matrix.ubuntu }} (${{ matrix.arch }})
+    needs: build_wheels
+    strategy:
+      fail-fast: false
+      matrix:
+        ubuntu: ["18.04", "20.04", "22.04", "24.04"]
+        arch: [x86_64, aarch64]
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: aarch64
+            runner: ubuntu-24.04-arm
+          # 18.04 ships Python 3.6, below upstream's python_requires>=3.8.
+          - ubuntu: "18.04"
+            python: python3.8
+            packages: python3.8 python3.8-venv
+          - ubuntu: "20.04"
+            python: python3
+            packages: python3 python3-venv
+          - ubuntu: "22.04"
+            python: python3
+            packages: python3 python3-venv
+          - ubuntu: "24.04"
+            python: python3
+            packages: python3 python3-venv
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: wheels-${{ matrix.arch }}
+          path: wheelhouse
+      - name: Install and import the wheel
+        run: |
+          docker run --rm -v "$PWD:/src:ro" "ubuntu:${{ matrix.ubuntu }}" bash -euxc '
+            export DEBIAN_FRONTEND=noninteractive
+            apt-get update -qq
+            apt-get install -y -qq ${{ matrix.packages }} > /dev/null
+            ${{ matrix.python }} -m venv /venv
+            /venv/bin/python -m pip install -q --upgrade pip
+            /venv/bin/python -m pip install --no-index --find-links /src/wheelhouse ugv_sdk_py
+            /venv/bin/python /src/python/smoke_test.py
+          '
+
   publish:
     name: Publish to PyPI
     if: startsWith(github.ref, 'refs/tags/pypi-v')
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_sdist, test_ubuntu]
     runs-on: ubuntu-24.04
     environment:
       name: pypi
@@ -70,3 +121,5 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

@@ -15,6 +15,10 @@ build = "cp3*-manylinux_*"
 test-command = "python {project}/python/smoke_test.py"
 
 [tool.cibuildwheel.linux]
+# Upstream supports Ubuntu 18.04, whose glibc 2.27 is too old for manylinux_2_28.
+# manylinux2014 needs only glibc 2.17.
+manylinux-x86_64-image = "manylinux2014"
+manylinux-aarch64-image = "manylinux2014"
 # asio is header-only. 1.28 is pinned because the SDK still calls
 # io_context::post/reset, which asio removed in 1.33.
 before-all = """
