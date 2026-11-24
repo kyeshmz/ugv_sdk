@@ -9,7 +9,7 @@
 > ```
 >
 > Changes from upstream:
-> - `.github/workflows/wheels.yml` builds manylinux wheels (x86_64 and aarch64) with cibuildwheel and publishes them to PyPI on `v*` tags.
+> - `.github/workflows/wheels.yml` builds manylinux wheels (x86_64 and aarch64) with cibuildwheel and publishes them to PyPI on `pypi-v*` tags (for example `pypi-v0.10.0`), kept apart from upstream's `v*` release tags.
 > - `pyproject.toml` declares the build requirements and the cibuildwheel settings, including pip's pybind11 for wheel builds (3.0.x for Python 3.8, 3.1+ otherwise).
 > - `setup.py` takes its version from `CMakeLists.txt`, credits upstream in the package metadata, and points CMake at pip's pybind11.
 > - The `python/pybind11` submodule, still used by plain CMake builds, moves to v3.1.0 so newer Python versions build.
