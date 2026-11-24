@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [tool.cibuildwheel]
 # The SDK talks to robots over Linux SocketCAN, so only Linux wheels are built.
+# This includes the free-threaded 3.14t+ builds, which re-enable the GIL on import.
 build = "cp3*-manylinux_*"
-skip = "cp3??t-*"
 test-command = "python {project}/python/smoke_test.py"
 
 [tool.cibuildwheel.linux]
