@@ -98,5 +98,4 @@ setup(
     ext_modules=[CMakeExtension('ugv_sdk_py')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
-    install_requires=['pybind11'],
 )
